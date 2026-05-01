@@ -1,0 +1,3 @@
+rate_scenario,annual_interest_rate,minimum_student_debt_for_2500_interest,single_borrower_interest_paid_example,project_single_marginal_tax_rate,project_married_marginal_tax_rate,total_unmarried_allowable_deduction,current_married_allowable_deduction,proposed_married_allowable_deduction,deduction_lost_when_two_unmarried_borrowers_marry,total_unmarried_tax_savings,current_married_tax_savings,proposed_married_tax_savings,estimated_federal_tax_savings_loss_current_law,tax_savings_restored_under_proposed_5000_married_cap
+Estimated interest at 2.75% annual rate,0.0275,90909.09090909091,2500,0.22,0.22,5000,2500,5000,2500,1100,550,1100,550,550
+Estimated interest at 6.8% annual rate,0.068,36764.70588235294,2500,0.22,0.22,5000,2500,5000,2500,1100,550,1100,550,550

@@ -1,0 +1,21 @@
+.DS_Store
+.Rhistory
+.RData
+.Ruserdata
+
+__pycache__/
+*.py[cod]
+
+node_modules/
+
+renv/library/
+renv/staging/
+
+0. Data/
+Outmoded/
+
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z

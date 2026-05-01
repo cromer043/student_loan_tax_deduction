@@ -1,0 +1,2 @@
+census_vintage,geography,black_population,total_population,black_population_share,nonblack_population_share,census_api_url
+2024 ACS 5-year,United States,48387884,334922499,0.14447486849786106,0.8555251315021389,"https://api.census.gov/data/2024/acs/acs5?get=NAME,B02009_001E,B01003_001E&for=us:1"
