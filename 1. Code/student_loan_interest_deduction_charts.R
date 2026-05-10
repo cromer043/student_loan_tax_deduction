@@ -23,6 +23,10 @@ fill_values <- c(
   "Estimated interest at 2.75% annual rate" = "#2C7FB8",
   "Estimated interest at 6.8% annual rate" = "#D95F0E"
 )
+main_group_fill_values <- c(
+  "Black" = "#2C7FB8",
+  "Non-Black" = "#D95F0E"
+)
 group_colors <- c(
   "Black" = "#1b4332",
   "Non-Black" = "#c1121f",
@@ -189,6 +193,74 @@ make_horizontal_bar_plot <- function(df, group_col, estimate_col, se_col, title_
   save_plot_dual(output_file, p, width = 10, height = 7.5, dpi = 300)
 }
 
+make_main_grouped_rate_plot <- function(df, estimate_col, se_col, title_text, subtitle_text, y_label, output_file, source_id, percent_axis = FALSE, caption_body = comparison_caption_body) {
+  plot_df <- df %>%
+    transmute(
+      household_group,
+      rate_scenario,
+      group_value = black_nonblack,
+      estimate = .data[[estimate_col]],
+      se = .data[[se_col]]
+    ) %>%
+    filter(!is.na(group_value), !is.na(estimate)) %>%
+    add_plot_ci(estimate_col = "estimate", se_col = "se", floor_zero = TRUE) %>%
+    mutate(
+      group_value = factor(group_value, levels = c("Black", "Non-Black")),
+      rate_scenario = factor(rate_scenario, levels = rate_levels)
+    )
+
+  axis_upper <- max(plot_df$upper_95, na.rm = TRUE) * 1.05
+
+  p <- ggplot(plot_df, aes(x = rate_scenario, y = estimate, fill = group_value)) +
+    geom_col(position = position_dodge(width = 0.72), width = 0.6) +
+    geom_errorbar(
+      aes(ymin = lower_95, ymax = upper_95),
+      position = position_dodge(width = 0.72),
+      width = 0.16,
+      linewidth = 0.35,
+      alpha = 0.75
+    ) +
+    facet_wrap(~ household_group, ncol = 1, scales = "free_y") +
+    scale_fill_manual(values = main_group_fill_values, name = NULL) +
+    scale_x_discrete(labels = c("Estimated interest at 2.75% annual rate" = "2.75%", "Estimated interest at 6.8% annual rate" = "6.8%")) +
+    labs(
+      title = wrap_plot_title(title_text),
+      subtitle = wrap_plot_subtitle(subtitle_text),
+      x = "Interest rate",
+      y = y_label,
+      caption = build_caption_text(source_id, caption_body)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      legend.position = "top",
+      panel.grid.minor = element_blank(),
+      panel.grid.major.x = element_blank(),
+      strip.text = element_text(face = "bold"),
+      plot.title = element_text(face = "bold"),
+      plot.caption = element_text(hjust = 0, size = 8.7, lineheight = 1.05),
+      plot.margin = margin(10, 12, 22, 10)
+    ) +
+    coord_flip()
+
+  if (percent_axis) {
+    p <- p + scale_y_continuous(
+      labels = label_percent(scale = 1),
+      limits = c(0, axis_upper),
+      expand = expansion(mult = c(0, 0.01))
+    )
+  } else {
+    p <- p + scale_y_continuous(
+      trans = "sqrt",
+      breaks = c(0, 25, 50, 100, 250, 500),
+      labels = label_dollar(),
+      limits = c(0, axis_upper),
+      expand = expansion(mult = c(0, 0.01))
+    )
+  }
+
+  save_plot_dual(output_file, p, width = 8.6, height = 8.2, dpi = 300)
+}
+
 make_gain_two_panel_plot <- function(df, output_file, source_id) {
   plot_df <- bind_rows(
     df %>%
@@ -266,6 +338,80 @@ make_gain_two_panel_plot <- function(df, output_file, source_id) {
     )
 
   save_plot_dual(output_file, p, width = 10, height = 9.2, dpi = 300)
+}
+
+make_gain_two_panel_grouped_rate_plot <- function(df, output_file, source_id) {
+  plot_df <- bind_rows(
+    df %>%
+      filter(household_group == "Married household") %>%
+      transmute(
+        household_group,
+        rate_scenario,
+        group_value = black_nonblack,
+        measure = "Allowable deduction gain",
+        estimate = mean_deduction_gain,
+        se = `SE: mean deduction gain`
+      ),
+    df %>%
+      filter(household_group == "Married household") %>%
+      transmute(
+        household_group,
+        rate_scenario,
+        group_value = black_nonblack,
+        measure = "Estimated tax savings gain",
+        estimate = mean_tax_savings_gain,
+        se = `SE: mean tax savings gain`
+      )
+  ) %>%
+    filter(!is.na(group_value), !is.na(estimate)) %>%
+    add_plot_ci(estimate_col = "estimate", se_col = "se", floor_zero = TRUE) %>%
+    mutate(
+      group_value = factor(group_value, levels = c("Black", "Non-Black")),
+      rate_scenario = factor(rate_scenario, levels = rate_levels),
+      measure = factor(measure, levels = c("Allowable deduction gain", "Estimated tax savings gain"))
+    )
+
+  axis_upper <- max(plot_df$upper_95, na.rm = TRUE) * 1.05
+
+  p <- ggplot(plot_df, aes(x = rate_scenario, y = estimate, fill = group_value)) +
+    geom_col(position = position_dodge(width = 0.72), width = 0.6) +
+    geom_errorbar(
+      aes(ymin = lower_95, ymax = upper_95),
+      position = position_dodge(width = 0.72),
+      width = 0.16,
+      linewidth = 0.35,
+      alpha = 0.75
+    ) +
+    facet_wrap(~ measure, ncol = 1, scales = "free_y") +
+    scale_fill_manual(values = main_group_fill_values, name = NULL) +
+    scale_x_discrete(labels = c("Estimated interest at 2.75% annual rate" = "2.75%", "Estimated interest at 6.8% annual rate" = "6.8%")) +
+    scale_y_continuous(
+      trans = "sqrt",
+      breaks = c(0, 25, 50, 100, 250, 500),
+      labels = label_dollar(),
+      limits = c(0, axis_upper),
+      expand = expansion(mult = c(0, 0.01))
+    ) +
+    labs(
+      title = wrap_plot_title("Figure 4: A Higher Married Cap Raises Deductions and Tax Savings for Married Black Households"),
+      subtitle = wrap_plot_subtitle("Estimated allowable-deduction gains and estimated tax-savings gains from raising the married-household deduction cap to $5,000 for Black and Non-Black households."),
+      x = "Interest rate",
+      y = "Dollars",
+      caption = build_caption_text(source_id, married_cap_gain_caption_body)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      legend.position = "top",
+      panel.grid.minor = element_blank(),
+      panel.grid.major.x = element_blank(),
+      strip.text = element_text(face = "bold"),
+      plot.title = element_text(face = "bold"),
+      plot.caption = element_text(hjust = 0, size = 8.7, lineheight = 1.05),
+      plot.margin = margin(10, 12, 22, 10)
+    ) +
+    coord_flip()
+
+  save_plot_dual(output_file, p, width = 8.6, height = 9.2, dpi = 300)
 }
 
 make_appendix_components_plot <- function(df, output_file, source_id) {
@@ -593,7 +739,7 @@ for (i in seq_len(nrow(main_graph_specs))) {
   ensure_dir(spec$outmoded_dir[[1]])
   move_existing_outputs(spec$main_dir[[1]], spec$outmoded_dir[[1]])
 
-  make_gain_two_panel_plot(
+  make_gain_two_panel_grouped_rate_plot(
     comparison_df,
     output_file = file.path(spec$main_dir[[1]], "Figure 4 - A Higher Married Cap Raises Deductions and Tax Savings for Married Black Households.pdf"),
     source_id = spec$source_id[[1]]
@@ -645,14 +791,13 @@ for (i in seq_len(nrow(main_graph_specs))) {
     household_filter = "Married household"
   )
 
-  make_horizontal_bar_plot(
+  make_main_grouped_rate_plot(
     comparison_df,
-    group_col = "black_nonblack",
     estimate_col = "pct_borrowers_at_2500_limit_baseline",
     se_col = "SE: % borrowers at $2500 limit baseline",
     title_text = "Figure 3: $2,500 Cap Binds Differently for Black and Non-Black Borrowers",
     subtitle_text = "Percent of married and unmarried borrowers at the current $2,500 allowable-deduction limit for Black and Non-Black households.",
-    x_label = "Percent of borrowers",
+    y_label = "Percent of borrowers",
     output_file = file.path(spec$main_dir[[1]], "Figure 3 - $2500 Cap Binds Differently for Black and Non-Black Borrowers.pdf"),
     source_id = spec$source_id[[1]],
     percent_axis = TRUE
