@@ -92,6 +92,27 @@ zero_payment_income_cutoff <- function(household_size) {
   )
 }
 
+ibr_payment_rate_from_age <- function(age) {
+  case_when(
+    is.na(age) ~ NA_real_,
+    age < 34 ~ 0.10,
+    TRUE ~ 0.15
+  )
+}
+
+ibr_repayment_years_from_age <- function(age) {
+  case_when(
+    is.na(age) ~ NA_real_,
+    age < 34 ~ 20,
+    TRUE ~ 25
+  )
+}
+
+annual_ibr_payment_from_income <- function(income, household_size, age) {
+  discretionary_income <- pmax(income - zero_payment_income_cutoff(household_size), 0)
+  discretionary_income * ibr_payment_rate_from_age(age)
+}
+
 rule <- function(x = "") {
   cat("\n", strrep("=", 78), "\n", x, "\n", strrep("=", 78), "\n", sep = "")
 }
@@ -245,6 +266,7 @@ scf_df <- scf_raw %>%
     implicate_id = as.numeric(y1),
     implicate_number = implicate_id %% 10,
     weight = as.numeric(x42001),
+    age = as.numeric(x14),
     income = as.numeric(x5729),
     household_size = as.numeric(x101),
     filed_return = as.numeric(x5744),
@@ -253,6 +275,8 @@ scf_df <- scf_raw %>%
     race_1 = as.numeric(x6809),
     race_2 = as.numeric(x6810),
     student_debt = rowSums(across(all_of(available_balance_vars), ~ pmax(as.numeric(.x), 0, na.rm = TRUE)), na.rm = TRUE),
+    total_net_worth = as.numeric(networth),
+    mortgage_debt = as.numeric(nh_mort),
     annual_payment_proxy = rowSums(across(all_of(available_payment_vars), ~ pmax(as.numeric(.x), 0, na.rm = TRUE)), na.rm = TRUE),
     avg_apr_reported = if (length(available_rate_vars) > 0) rowMeans(across(all_of(available_rate_vars), ~ na_if(as.numeric(.x), 0)), na.rm = TRUE) else NA_real_,
     ethnicity = ethnicity_label(hispanic_flag),
@@ -265,7 +289,11 @@ scf_df <- scf_raw %>%
   mutate(
     avg_apr_reported = ifelse(is.nan(avg_apr_reported), NA_real_, avg_apr_reported),
     positive_student_debt = student_debt > 0,
-    zero_payment_cutoff = zero_payment_income_cutoff(household_size)
+    zero_payment_cutoff = zero_payment_income_cutoff(household_size),
+    ibr_payment_rate = ibr_payment_rate_from_age(age),
+    ibr_repayment_years = ibr_repayment_years_from_age(age),
+    annual_ibr_payment = annual_ibr_payment_from_income(income, household_size, age),
+    monthly_ibr_payment = annual_ibr_payment / 12
   ) %>%
   filter(
     !is.na(filing_status),
@@ -273,6 +301,7 @@ scf_df <- scf_raw %>%
     !is.na(ethnicity),
     !is.na(household_group),
     !is.na(income),
+    !is.na(age),
     !is.na(household_size),
     income > zero_payment_cutoff,
     (
@@ -324,7 +353,8 @@ estimate_metric_names <- c(
 summarise_implicate <- function(df, annual_interest_rate) {
   df %>%
     mutate(
-      interest_paid = if_else(positive_student_debt, student_debt * annual_interest_rate, 0),
+      accrued_interest = if_else(positive_student_debt, student_debt * annual_interest_rate, 0),
+      interest_paid = if_else(positive_student_debt, pmin(accrued_interest, annual_ibr_payment), 0),
       max_potential_deduction = pmin(interest_paid, student_loan_interest_deduction_max),
       allowable_deduction = allowable_deduction_from_magi(max_potential_deduction, income, filing_status),
       marginal_tax_rate = marginal_tax_rate_from_income(income, filing_status),
@@ -423,7 +453,8 @@ build_married_cap_comparison <- function(df, group_var) {
         annual_interest_rate = interest_rate_scenarios$annual_interest_rate[[i]],
         comparison_group = .data[[group_var]],
         positive_student_debt = student_debt > 0,
-        interest_paid = if_else(positive_student_debt, student_debt * annual_interest_rate, 0),
+        accrued_interest = if_else(positive_student_debt, student_debt * annual_interest_rate, 0),
+        interest_paid = if_else(positive_student_debt, pmin(accrued_interest, annual_ibr_payment), 0),
         baseline_cap = deduction_cap_from_household_group(household_group, married_cap = student_loan_interest_deduction_max),
         proposed_cap = deduction_cap_from_household_group(household_group, married_cap = student_loan_interest_deduction_max_married_proposed),
         allowable_deduction_baseline = allowable_deduction_from_magi(pmin(interest_paid, baseline_cap), income, filing_status),
@@ -550,7 +581,8 @@ summarise_replicate_variance <- function(df, annual_interest_rate, replicate_col
   scenario_df <- df %>%
     filter(implicate_number == 1) %>%
     mutate(
-      interest_paid = if_else(positive_student_debt, student_debt * annual_interest_rate, 0),
+      accrued_interest = if_else(positive_student_debt, student_debt * annual_interest_rate, 0),
+      interest_paid = if_else(positive_student_debt, pmin(accrued_interest, annual_ibr_payment), 0),
       max_potential_deduction = pmin(interest_paid, student_loan_interest_deduction_max),
       allowable_deduction = allowable_deduction_from_magi(max_potential_deduction, income, filing_status),
       marginal_tax_rate = marginal_tax_rate_from_income(income, filing_status),

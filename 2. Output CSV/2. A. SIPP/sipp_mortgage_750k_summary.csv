@@ -1,0 +1,5 @@
+source,year,population,pct_mortgage_ge_750k,unweighted_n,weighted_population
+SIPP,2024,All households,0.7868431227537516,15604,132147830.26026554
+SIPP,2024,Filtered households with positive student debt,8.800001085090656,83,740809.1058267001
+SIPP,2024,Filtered married households with positive student debt,11.872793825742301,59,549080.6149589999
+SIPP,2024,Filtered unmarried households with positive student debt,0,24,191728.49086770002

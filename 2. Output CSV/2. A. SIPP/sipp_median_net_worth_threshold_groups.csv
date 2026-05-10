@@ -1,0 +1,4 @@
+source,year,threshold_group,weighted_median_total_net_worth,unweighted_n,weighted_population
+SIPP,2024,Low student debt interest binding constraint,1007430,7,60009.043536699995
+SIPP,2024,High student debt interest binding constraint,980840,12,106023.14460330002
+SIPP,2024,$750k home mortgage threshold,2540593,121,1039796.1142712004

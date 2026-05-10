@@ -1,0 +1,4 @@
+source,year,threshold_group,weighted_median_total_net_worth,unweighted_n,weighted_population
+SCF,2022,Low student debt interest binding constraint,38480,46.4,1598874.2453799492
+SCF,2022,High student debt interest binding constraint,104593,123.6,4483700.666151664
+SCF,2022,$750k home mortgage threshold,4166044,282,432187.2597119682

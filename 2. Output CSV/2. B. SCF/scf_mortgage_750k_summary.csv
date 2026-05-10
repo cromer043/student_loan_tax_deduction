@@ -1,0 +1,5 @@
+source,year,population,pct_mortgage_ge_750k,unweighted_n,weighted_population
+SCF,2022,All households,1.6457205993738588,4595,26261277.876692697
+SCF,2022,Filtered households with positive student debt,0,458.6,17356474.24398296
+SCF,2022,Filtered married households with positive student debt,0,236.2,9812624.995806077
+SCF,2022,Filtered unmarried households with positive student debt,0,222.4,7543849.248176876

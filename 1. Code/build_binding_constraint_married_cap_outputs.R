@@ -532,7 +532,33 @@ relief_summary <- bind_rows(sipp_outputs$relief_summary, scf_outputs$relief_summ
   add_ci_columns("impacted_households", "SE: impacted households", "impacted_households", floor_zero = TRUE) %>%
   add_ci_columns("total_estimated_tax_savings_gain", "SE: total estimated tax savings gain", "total_estimated_tax_savings_gain", floor_zero = TRUE) %>%
   add_ci_columns("tax_relief_share", "SE: tax relief share", "tax_relief_share", floor_zero = TRUE) %>%
-  add_ci_columns("tax_relief_to_population_ratio", "SE: tax relief to population ratio", "tax_relief_to_population_ratio", floor_zero = TRUE)
+  add_ci_columns("tax_relief_to_population_ratio", "SE: tax relief to population ratio", "tax_relief_to_population_ratio", floor_zero = TRUE) %>%
+  group_by(source, year, rate_scenario_id, rate_scenario) %>%
+  mutate(
+    total_impacted_households = impacted_households[group == "All binding-constraint married households"][1],
+    total_impacted_households_se = `SE: impacted households`[group == "All binding-constraint married households"][1],
+    percent_of_impacted_households = dplyr::if_else(
+      group == "All binding-constraint married households",
+      100,
+      100 * impacted_households / total_impacted_households
+    ),
+    `SE: percent of impacted households` = dplyr::if_else(
+      group == "All binding-constraint married households",
+      0,
+      100 * abs(impacted_households / total_impacted_households) * sqrt(
+        (`SE: impacted households` / impacted_households)^2 +
+          (total_impacted_households_se / total_impacted_households)^2
+      )
+    )
+  ) %>%
+  ungroup() %>%
+  add_ci_columns(
+    "percent_of_impacted_households",
+    "SE: percent of impacted households",
+    "percent_of_impacted_households",
+    floor_zero = TRUE
+  ) %>%
+  select(-total_impacted_households, -total_impacted_households_se)
 
 sipp_binding_out <- file.path(paths$sipp_csv_dir, "sipp_binding_constraint_married_cap_black_nonblack.csv")
 scf_binding_out <- file.path(paths$scf_csv_dir, "scf_binding_constraint_married_cap_black_nonblack.csv")

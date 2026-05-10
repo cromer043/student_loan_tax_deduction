@@ -1,0 +1,4 @@
+source,year,population,weighted_mean_total_net_worth,weighted_median_total_net_worth,unweighted_n,weighted_population,pct_at_binding_constraint_R275,pct_at_binding_constraint_R680
+SCF,2022,Filtered households with positive student debt,211249.73899823354,80840.2,458.6,17356474.24398296,9.210078779295634,25.83236310387329
+SCF,2022,Filtered married households with positive student debt,290413.3867910903,135336,236.2,9812624.995806077,13.419845145521691,34.13296764437369
+SCF,2022,Filtered unmarried households with positive student debt,108255.47107715427,12980,222.4,7543849.248176876,3.737219698010088,15.037791866498347

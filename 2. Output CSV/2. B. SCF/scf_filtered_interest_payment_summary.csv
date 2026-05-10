@@ -1,0 +1,7 @@
+source,year,rate_scenario_id,rate_scenario,annual_interest_rate,weighted_mean_interest_paid,weighted_median_interest_paid,unweighted_n,weighted_population,population
+SCF,2022,R275,Estimated interest at 2.75% annual rate,0.0275,1121.4286246666761,605,459,17356474.24398296,Filtered households with positive student debt
+SCF,2022,R275,Estimated interest at 2.75% annual rate,0.0275,1325.2034991862079,748,236,9812624.995806077,Filtered married households with positive student debt
+SCF,2022,R275,Estimated interest at 2.75% annual rate,0.0275,856.3682330361736,550,222,7543849.248176876,Filtered unmarried households with positive student debt
+SCF,2022,R680,Estimated interest at 6.8% annual rate,0.068,2104.6971902869063,1322.8,459,17356474.24398296,Filtered households with positive student debt
+SCF,2022,R680,Estimated interest at 6.8% annual rate,0.068,2503.9453365900554,1672.8000000000002,236,9812624.995806077,Filtered married households with positive student debt
+SCF,2022,R680,Estimated interest at 6.8% annual rate,0.068,1585.3462282803353,1153.6,222,7543849.248176876,Filtered unmarried households with positive student debt

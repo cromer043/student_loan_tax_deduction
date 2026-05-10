@@ -34,15 +34,19 @@ Source-specific folders:
 
 - SIPP CSVs: [`2. Output CSV/2. A. SIPP`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/2.%20A.%20SIPP)
 - SCF CSVs: [`2. Output CSV/2. B. SCF`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/2.%20B.%20SCF)
+- IRS CSVs: [`2. Output CSV/2. C. IRS`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/2.%20C.%20IRS)
 - SIPP graphs: [`3. Output Graphs/3. A. Sipp`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/3.%20Output%20Graphs/3.%20A.%20Sipp)
 - SCF graphs: [`3. Output Graphs/3. B. SCF`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/3.%20Output%20Graphs/3.%20B.%20SCF)
+- IRS graphs: [`3. Output Graphs/3. C. IRS`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/3.%20Output%20Graphs/3.%20C.%20IRS)
 
 Outmoded mirrors:
 
 - [`4. outmoded/2. Output CSV/2. A. SIPP`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded/2.%20Output%20CSV/2.%20A.%20SIPP)
 - [`4. outmoded/2. Output CSV/2. B. SCF`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded/2.%20Output%20CSV/2.%20B.%20SCF)
+- [`4. outmoded/2. Output CSV/2. C. IRS`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded/2.%20Output%20CSV/2.%20C.%20IRS)
 - [`4. outmoded/3. Output Graphs/3. A. Sipp`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded/3.%20Output%20Graphs/3.%20A.%20Sipp)
 - [`4. outmoded/3. Output Graphs/3. B. SCF`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded/3.%20Output%20Graphs/3.%20B.%20SCF)
+- [`4. outmoded/3. Output Graphs/3. C. IRS`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded/3.%20Output%20Graphs/3.%20C.%20IRS)
 
 ## Scripts
 
@@ -67,8 +71,23 @@ Outmoded mirrors:
 - [`build_binding_constraint_married_cap_outputs.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/build_binding_constraint_married_cap_outputs.R)
   Builds binding-constraint married-household outputs for the `$5,000` married-cap comparison, including Black / Non-Black subgroup gains, total modeled tax-relief tables, and the Census-population-share ratio inputs.
 
+- [`build_filtered_interest_payment_summary_tables.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/build_filtered_interest_payment_summary_tables.R)
+  Builds source-specific CSVs and summary tables for annual interest actually paid among filtered households with positive student debt, where `interest_paid = min(accrued interest, annual_ibr_payment)`.
+
+- [`build_net_worth_and_mortgage_summary_csvs.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/build_net_worth_and_mortgage_summary_csvs.R)
+  Builds source-specific CSVs for:
+  - weighted mean and weighted median total net worth among filtered households with positive student debt, plus the percent at the current `$2,500` binding deduction constraint under the `2.75%` and `6.8%` interest assumptions
+  - the weighted percent of households with mortgage debt greater than or equal to `$750,000` for all households and for the filtered positive-debt household subsets
+
 - [`student_loan_interest_deduction_charts.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/student_loan_interest_deduction_charts.R)
   Builds the current and outmoded graph outputs. All graph intervals are now `95% confidence intervals`, not `±1 SE`.
+
+- [`irs_student_loan_deduction_state_maps.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/irs_student_loan_deduction_state_maps.R)
+  Downloads-ready IRS mapping workflow for the SOI state table workbook. The current main pass reads the overall state columns from [`19in55cm.xlsx`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/0.%20Data/IRS/19in55cm.xlsx) for tax year `2019`, extracts:
+  - `Number of returns [1]`
+  - `Student loan interest deduction: Number`
+  - `Student loan interest deduction: Amount`
+  and writes one state-level CSV plus two state maps to the IRS output folders. The script also accepts optional arguments so alternative IRS workbook vintages can be rendered to the outmoded IRS folders, for example the tax year `2022` workbook [`22in55cm.xlsx`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/0.%20Data/IRS/22in55cm.xlsx).
 
 - [`run_full_workflow.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/run_full_workflow.R)
   Convenience wrapper that downloads data, runs all source-year analyses, builds time-series CSVs, and regenerates graphs.
@@ -101,10 +120,24 @@ Build binding-constraint married-cap outputs:
 Rscript "1. Code/build_binding_constraint_married_cap_outputs.R"
 ```
 
+Build filtered interest-payment summaries:
+
+```bash
+Rscript "1. Code/build_filtered_interest_payment_summary_tables.R"
+```
+
+Build net-worth and mortgage-threshold summary CSVs:
+
+```bash
+Rscript "1. Code/build_net_worth_and_mortgage_summary_csvs.R"
+```
+
 Regenerate graphs:
 
 ```bash
 Rscript "1. Code/student_loan_interest_deduction_charts.R"
+Rscript "1. Code/irs_student_loan_deduction_state_maps.R"
+Rscript "1. Code/irs_student_loan_deduction_state_maps.R" --irs-file="0. Data/IRS/22in55cm.xlsx" --tax-year=2022 --outmoded=true
 ```
 
 Run the full workflow:
@@ -144,7 +177,16 @@ At minimum, the harmonized files carry the variables needed for:
 Student loan interest deduction logic:
 
 - `interest_paid`
-  Estimated annual interest paid under the assumed rate scenario.
+  Estimated annual interest actually paid under the assumed rate scenario and the current project repayment assumption.
+- repayment assumption
+  All households are modeled as enrolled in `IBR`.
+  - households younger than `34` are treated as post-`July 1, 2014` borrowers and pay `10%` of discretionary income over `20` years
+  - households age `34` and older are treated as pre-`July 1, 2014` borrowers and pay `15%` of discretionary income over `25` years
+  - discretionary income is household income above `150%` of the poverty-line proxy already used in the project
+- `annual_ibr_payment = max(income - poverty-line cutoff, 0) × IBR payment rate`
+- `monthly_ibr_payment = annual_ibr_payment / 12`
+- `accrued_interest = student_debt × annual_interest_rate`
+- `interest_paid = min(accrued_interest, annual_ibr_payment)`
 - `max_potential_deduction = min(interest_paid, cap)`
 - `allowable_deduction`
   Applies current MAGI phaseout rules.
@@ -178,7 +220,12 @@ IDR-style exclusion:
   - size `1`: `$23,500`
   - each additional household member: `+$8,200`
 
-The tax deduction analysis remains separate from IDR payment modeling. Family size matters only for the low-income exclusion, not for the deduction cap or MAGI phaseout itself.
+Family size now matters in two places:
+
+- for the `$0 payment` exclusion
+- for the modeled `IBR` discretionary-income payment cap that limits `interest_paid`
+
+Family size still does not affect the deduction cap or the MAGI phaseout itself.
 
 ## Race Group Definitions
 
@@ -231,15 +278,9 @@ SCF:
 Main graph folders now keep only the current memo-order figures:
 
 1. `Percent of Households with Student Debt by Black and Non-Black Group`
-2. `Median Student Debt Among Debt Holders by Black and Non-Black Group`
-3. `Mean Student Debt Among Debt Holders by Black and Non-Black Group`
-4. `$2,500 Cap Binds Differently for Black and Non-Black Married Borrowers`
-5. `The $2,500 Cap Also Binds Differently for Black and Non-Black Unmarried Borrowers`
-6. `A Higher Married Cap Expands Deductions Most for Some Groups`
-7. `A Higher Married Cap Disproportionately Raises Tax Savings for Married Black Households`
-8. `Binding Constraint Married Borrowers Gain More Deduction Dollars`
-9. `Binding Constraint Married Borrowers Gain More Tax Savings`
-10. `Black Share of Binding-Constraint Tax Relief Relative to Population Share`
+2. `Mean Student Debt Among Debt Holders by Black and Non-Black Group`
+3. `$2,500 Cap Binds Differently for Black and Non-Black Borrowers`
+4. `A Higher Married Cap Raises Deductions and Tax Savings for Married Black Households`
 
 Older graphs still generate, but they now write to `4. outmoded` instead of the main graph folders.
 

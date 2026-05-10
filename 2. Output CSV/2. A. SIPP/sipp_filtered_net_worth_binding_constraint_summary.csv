@@ -1,0 +1,4 @@
+source,year,population,weighted_mean_total_net_worth,weighted_median_total_net_worth,unweighted_n,weighted_population,pct_at_binding_constraint_R275,pct_at_binding_constraint_R680
+SIPP,2024,Filtered households with positive student debt,1791458.5558953464,887900,83,740809.1058267001,8.100473261560868,14.311803644068917
+SIPP,2024,Filtered married households with positive student debt,2042299.185832515,1007430,59,549080.6149589999,6.017995123843042,10.19782439141129
+SIPP,2024,Filtered unmarried households with positive student debt,1073089.9570539577,556512,24,191728.49086770002,14.064367158195154,26.09360116281405

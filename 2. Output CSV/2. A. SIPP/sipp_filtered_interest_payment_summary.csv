@@ -1,0 +1,7 @@
+source,year,rate_scenario_id,rate_scenario,annual_interest_rate,weighted_mean_interest_paid,weighted_median_interest_paid,unweighted_n,weighted_population,population
+SIPP,2024,R275,Estimated interest at 2.75% annual rate,0.0275,840.9474573985416,495,83,740809.1058267001,Filtered households with positive student debt
+SIPP,2024,R275,Estimated interest at 2.75% annual rate,0.0275,706.3661122428795,459.25,59,549080.6149589999,Filtered married households with positive student debt
+SIPP,2024,R275,Estimated interest at 2.75% annual rate,0.0275,1226.3675242109987,1375,24,191728.49086770002,Filtered unmarried households with positive student debt
+SIPP,2024,R680,Estimated interest at 6.8% annual rate,0.068,1318.8147169251433,748,83,740809.1058267001,Filtered households with positive student debt
+SIPP,2024,R680,Estimated interest at 6.8% annual rate,0.068,1192.790653354169,730.7,59,549080.6149589999,Filtered married households with positive student debt
+SIPP,2024,R680,Estimated interest at 6.8% annual rate,0.068,1679.7280585574604,1702.9,24,191728.49086770002,Filtered unmarried households with positive student debt

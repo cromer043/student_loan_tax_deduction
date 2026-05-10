@@ -181,6 +181,85 @@ make_horizontal_bar_plot <- function(df, group_col, estimate_col, se_col, title_
   save_plot_dual(output_file, p, width = 10, height = 7.5, dpi = 300)
 }
 
+make_gain_two_panel_plot <- function(df, output_file, source_id) {
+  plot_df <- bind_rows(
+    df %>%
+      filter(household_group == "Married household") %>%
+      transmute(
+        household_group,
+        rate_scenario,
+        group_value = black_nonblack,
+        measure = "Allowable deduction gain",
+        estimate = mean_deduction_gain,
+        se = `SE: mean deduction gain`
+      ),
+    df %>%
+      filter(household_group == "Married household") %>%
+      transmute(
+        household_group,
+        rate_scenario,
+        group_value = black_nonblack,
+        measure = "Estimated tax savings gain",
+        estimate = mean_tax_savings_gain,
+        se = `SE: mean tax savings gain`
+      )
+  ) %>%
+    filter(!is.na(group_value), !is.na(estimate)) %>%
+    add_plot_ci(estimate_col = "estimate", se_col = "se", floor_zero = TRUE)
+
+  ordering <- plot_df %>%
+    filter(rate_scenario == "Estimated interest at 6.8% annual rate", measure == "Allowable deduction gain") %>%
+    group_by(group_value) %>%
+    summarise(order_value = mean(estimate, na.rm = TRUE), .groups = "drop") %>%
+    arrange(desc(order_value), group_value)
+
+  plot_df <- plot_df %>%
+    mutate(
+      group_value = factor(group_value, levels = rev(ordering$group_value)),
+      measure = factor(measure, levels = c("Allowable deduction gain", "Estimated tax savings gain"))
+    )
+
+  axis_upper <- max(plot_df$upper_95, na.rm = TRUE) * 1.05
+
+  p <- ggplot(plot_df, aes(x = estimate, y = group_value, fill = rate_scenario)) +
+    geom_col(position = position_dodge(width = 0.75), width = 0.62) +
+    geom_errorbar(
+      aes(xmin = lower_95, xmax = upper_95),
+      position = position_dodge(width = 0.75),
+      width = 0.18,
+      linewidth = 0.35,
+      alpha = 0.75
+    ) +
+    facet_wrap(~ measure, ncol = 1, scales = "free_y") +
+    scale_fill_manual(values = fill_values, labels = c("2.75%", "6.8%"), name = "Interest rate") +
+    scale_x_continuous(
+      trans = "sqrt",
+      breaks = c(0, 25, 50, 100, 250, 500),
+      labels = label_dollar(),
+      limits = c(0, axis_upper),
+      expand = expansion(mult = c(0, 0.01))
+    ) +
+    labs(
+      title = wrap_plot_title("Figure 4: A Higher Married Cap Raises Deductions and Tax Savings for Married Black Households"),
+      subtitle = wrap_plot_subtitle("Estimated allowable-deduction gains and estimated tax-savings gains from raising the married-household deduction cap to $5,000 for Black and Non-Black households."),
+      x = "Dollars",
+      y = NULL,
+      caption = build_caption_text(source_id, comparison_caption_body)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      legend.position = "top",
+      panel.grid.minor = element_blank(),
+      panel.grid.major.y = element_blank(),
+      strip.text = element_text(face = "bold"),
+      plot.title = element_text(face = "bold"),
+      plot.caption = element_text(hjust = 0, size = 8.7, lineheight = 1.05),
+      plot.margin = margin(10, 12, 22, 10)
+    )
+
+  save_plot_dual(output_file, p, width = 10, height = 9.2, dpi = 300)
+}
+
 make_appendix_components_plot <- function(df, output_file, source_id) {
   measure_specs <- tribble(
     ~measure, ~estimate_col, ~se_col,
@@ -425,12 +504,9 @@ main_graph_specs <- tribble(
 
 main_graph_keep_files <- c(
   "Figure 1 - Percent of Households with Student Debt by Black and Non-Black Group.pdf",
-  "Figure 2 - Median Student Debt Among Debt Holders by Black and Non-Black Group.pdf",
-  "Figure 3 - Mean Student Debt Among Debt Holders by Black and Non-Black Group.pdf",
-  "Figure 4 - $2500 Cap Binds Differently for Black and Non-Black Married Borrowers.pdf",
-  "Figure 5 - The $2500 Cap Also Binds Differently for Black and Non-Black Unmarried Borrowers.pdf",
-  "Figure 6 - A Higher Married Cap Expands Deductions Most for Some Groups.pdf",
-  "Figure 7 - A Higher Married Cap Disproportionately Raises Tax Savings for Married Black Households.pdf"
+  "Figure 2 - Mean Student Debt Among Debt Holders by Black and Non-Black Group.pdf",
+  "Figure 3 - $2500 Cap Binds Differently for Black and Non-Black Borrowers.pdf",
+  "Figure 4 - A Higher Married Cap Raises Deductions and Tax Savings for Married Black Households.pdf"
 )
 
 outmoded_combined_specs <- tribble(
@@ -509,17 +585,10 @@ for (i in seq_len(nrow(main_graph_specs))) {
   ensure_dir(spec$outmoded_dir[[1]])
   move_existing_outputs(spec$main_dir[[1]], spec$outmoded_dir[[1]])
 
-  make_horizontal_bar_plot(
+  make_gain_two_panel_plot(
     comparison_df,
-    group_col = "black_nonblack",
-    estimate_col = "mean_tax_savings_gain",
-    se_col = "SE: mean tax savings gain",
-    title_text = "Figure 7: A Higher Married Cap Disproportionately Raises Tax Savings for Married Black Households",
-    subtitle_text = "Estimated tax savings gain from raising the married-household deduction cap to $5,000 for Black and Non-Black households.",
-    x_label = "Dollars",
-    output_file = file.path(spec$main_dir[[1]], "Figure 7 - A Higher Married Cap Disproportionately Raises Tax Savings for Married Black Households.pdf"),
-    source_id = spec$source_id[[1]],
-    household_filter = "Married household"
+    output_file = file.path(spec$main_dir[[1]], "Figure 4 - A Higher Married Cap Raises Deductions and Tax Savings for Married Black Households.pdf"),
+    source_id = spec$source_id[[1]]
   )
 
   make_horizontal_bar_plot(
@@ -527,10 +596,23 @@ for (i in seq_len(nrow(main_graph_specs))) {
     group_col = "black_nonblack",
     estimate_col = "mean_deduction_gain",
     se_col = "SE: mean deduction gain",
-    title_text = "Figure 6: A Higher Married Cap Expands Deductions Most for Black Households",
+    title_text = "Outmoded Figure: A Higher Married Cap Expands Deductions Most for Black Households",
     subtitle_text = "Estimated allowable-deduction gain from raising the married-household deduction cap to $5,000 for Black and Non-Black households.",
     x_label = "Dollars",
-    output_file = file.path(spec$main_dir[[1]], "Figure 6 - A Higher Married Cap Expands Deductions Most for Some Groups.pdf"),
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 4 - A Higher Married Cap Expands Deductions Most for Some Groups.pdf"),
+    source_id = spec$source_id[[1]],
+    household_filter = "Married household"
+  )
+
+  make_horizontal_bar_plot(
+    comparison_df,
+    group_col = "black_nonblack",
+    estimate_col = "mean_tax_savings_gain",
+    se_col = "SE: mean tax savings gain",
+    title_text = "Outmoded Figure: A Higher Married Cap Disproportionately Raises Tax Savings for Married Black Households",
+    subtitle_text = "Estimated tax savings gain from raising the married-household deduction cap to $5,000 for Black and Non-Black households.",
+    x_label = "Dollars",
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 5 - A Higher Married Cap Disproportionately Raises Tax Savings for Married Black Households.pdf"),
     source_id = spec$source_id[[1]],
     household_filter = "Married household"
   )
@@ -560,13 +642,12 @@ for (i in seq_len(nrow(main_graph_specs))) {
     group_col = "black_nonblack",
     estimate_col = "pct_borrowers_at_2500_limit_baseline",
     se_col = "SE: % borrowers at $2500 limit baseline",
-    title_text = "Figure 4: $2,500 Cap Binds Differently for Black and Non-Black Married Borrowers",
-    subtitle_text = "Percent of married borrowers at the current $2,500 allowable-deduction limit for Black and Non-Black households.",
-    x_label = "Percent of married borrowers",
-    output_file = file.path(spec$main_dir[[1]], "Figure 4 - $2500 Cap Binds Differently for Black and Non-Black Married Borrowers.pdf"),
+    title_text = "Figure 3: $2,500 Cap Binds Differently for Black and Non-Black Borrowers",
+    subtitle_text = "Percent of married and unmarried borrowers at the current $2,500 allowable-deduction limit for Black and Non-Black households.",
+    x_label = "Percent of borrowers",
+    output_file = file.path(spec$main_dir[[1]], "Figure 3 - $2500 Cap Binds Differently for Black and Non-Black Borrowers.pdf"),
     source_id = spec$source_id[[1]],
-    percent_axis = TRUE,
-    household_filter = "Married household"
+    percent_axis = TRUE
   )
 
   make_horizontal_bar_plot(
@@ -578,20 +659,6 @@ for (i in seq_len(nrow(main_graph_specs))) {
     subtitle_text = "Percent of unmarried borrowers at the current $2,500 allowable-deduction limit by modified race group.",
     x_label = "Percent of unmarried borrowers",
     output_file = file.path(spec$outmoded_dir[[1]], "Figure 9 - Share of Unmarried Borrowers at the $2500 Deduction Limit by Race.pdf"),
-    source_id = spec$source_id[[1]],
-    percent_axis = TRUE,
-    household_filter = "Unmarried household"
-  )
-
-  make_horizontal_bar_plot(
-    comparison_df,
-    group_col = "black_nonblack",
-    estimate_col = "pct_borrowers_at_2500_limit_baseline",
-    se_col = "SE: % borrowers at $2500 limit baseline",
-    title_text = "Figure 5: The $2,500 Cap Also Binds Differently for Black and Non-Black Unmarried Borrowers",
-    subtitle_text = "Percent of unmarried borrowers at the current $2,500 allowable-deduction limit for Black and Non-Black households.",
-    x_label = "Percent of unmarried borrowers",
-    output_file = file.path(spec$main_dir[[1]], "Figure 5 - The $2500 Cap Also Binds Differently for Black and Non-Black Unmarried Borrowers.pdf"),
     source_id = spec$source_id[[1]],
     percent_axis = TRUE,
     household_filter = "Unmarried household"
@@ -645,6 +712,7 @@ for (i in seq_len(nrow(time_series_specs))) {
   group_col <- if (spec$grouping[[1]] == "black_nonblack") "black_nonblack" else "race"
   out_dir <- if (spec$grouping[[1]] == "black_nonblack") spec$main_output_dir[[1]] else spec$outmoded_output_dir[[1]]
   ensure_dir(out_dir)
+  ensure_dir(spec$outmoded_output_dir[[1]])
 
   make_time_series_plot(
     df = df,
@@ -679,7 +747,7 @@ for (i in seq_len(nrow(time_series_specs))) {
     lower_col = "lower_95_median_student_debt_positive",
     upper_col = "upper_95_median_student_debt_positive",
     title_text = if (spec$grouping[[1]] == "black_nonblack") {
-      "Figure 2: Median Student Debt Remains Higher for Black Borrowers Over Time"
+      "Outmoded Figure: Median Student Debt Remains Higher for Black Borrowers Over Time"
     } else {
       "Outmoded Figure: Median Student Debt Moves Differently Across Race Groups"
     },
@@ -689,7 +757,7 @@ for (i in seq_len(nrow(time_series_specs))) {
       "Median student debt among households with positive student debt over time by collapsed race group."
     },
     y_label = "Dollars",
-    output_file = file.path(out_dir, if (spec$grouping[[1]] == "black_nonblack") {
+    output_file = file.path(if (spec$grouping[[1]] == "black_nonblack") spec$outmoded_output_dir[[1]] else out_dir, if (spec$grouping[[1]] == "black_nonblack") {
       "Figure 2 - Median Student Debt Among Debt Holders by Black and Non-Black Group.pdf"
     } else {
       "Time Series - Median Student Debt Among Debt Holders by Race.pdf"
@@ -705,7 +773,7 @@ for (i in seq_len(nrow(time_series_specs))) {
     lower_col = "lower_95_mean_student_debt_positive",
     upper_col = "upper_95_mean_student_debt_positive",
     title_text = if (spec$grouping[[1]] == "black_nonblack") {
-      "Figure 3: Average Student Debt Stays Uneven Between Black and Non-Black Households"
+      "Figure 2: Average Student Debt Stays Uneven Between Black and Non-Black Households"
     } else {
       "Outmoded Figure: Average Student Debt Still Varies Across Race Groups"
     },
@@ -716,7 +784,7 @@ for (i in seq_len(nrow(time_series_specs))) {
     },
     y_label = "Dollars",
     output_file = file.path(out_dir, if (spec$grouping[[1]] == "black_nonblack") {
-      "Figure 3 - Mean Student Debt Among Debt Holders by Black and Non-Black Group.pdf"
+      "Figure 2 - Mean Student Debt Among Debt Holders by Black and Non-Black Group.pdf"
     } else {
       "Time Series - Mean Student Debt Among Debt Holders by Race.pdf"
     }),

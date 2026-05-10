@@ -70,6 +70,8 @@ month_var <- NA_character_
 panel_var <- NA_character_
 wave_var <- NA_character_
 household_status_var <- NA_character_
+net_worth_var <- NA_character_
+mortgage_debt_var <- NA_character_
 
 use_replicate_weights <- TRUE
 
@@ -125,6 +127,27 @@ zero_payment_income_cutoff <- function(household_size) {
     household_size <= 1 ~ 23500,
     TRUE ~ 23500 + (household_size - 1) * 8200
   )
+}
+
+ibr_payment_rate_from_age <- function(age) {
+  dplyr::case_when(
+    is.na(age) ~ NA_real_,
+    age < 34 ~ 0.10,
+    TRUE ~ 0.15
+  )
+}
+
+ibr_repayment_years_from_age <- function(age) {
+  dplyr::case_when(
+    is.na(age) ~ NA_real_,
+    age < 34 ~ 20,
+    TRUE ~ 25
+  )
+}
+
+annual_ibr_payment_from_income <- function(income, household_size, age) {
+  discretionary_income <- pmax(income - zero_payment_income_cutoff(household_size), 0)
+  discretionary_income * ibr_payment_rate_from_age(age)
 }
 
 sipp_married_code_default <- 1
@@ -451,10 +474,13 @@ auto_income <- first_existing(c("THTOTINC", "AHTOTINC", "TPTOTINC", "APTOTINC"),
 auto_weight <- first_existing(c("WPFINWGT", "RFAMREFWT2", "RFAMNUMWT2"), main_names)
 auto_origin <- first_existing(c("EORIGIN", "AORIGIN"), main_names)
 auto_household_size <- first_existing(c("RHNUMPER", "AHNUMPER", "RFPERSONS", "AFPERSONS"), main_names)
+auto_age <- first_existing(c("AAGE", "TAGE", "EAGE"), main_names)
 auto_month <- first_existing(c("MONTHCODE"), main_names)
 auto_panel <- first_existing(c("SPANEL"), main_names)
 auto_wave <- first_existing(c("SWAVE"), main_names)
 auto_household_status <- first_existing(c("THHLDSTATUS"), main_names)
+auto_net_worth <- first_existing(c("THNETWORTH", "TNETWORTH", "AHNETWORTH"), main_names)
+auto_mortgage_debt <- first_existing(c("THDEBT_HOME", "TDEBT_HOME", "AHDEBT_HOME", "AMHDEBT", "EMHDEBT"), main_names)
 
 default_wealth_anchor_vars <- c(
   "THDEBT_ED", "TDEBT_ED",
@@ -476,10 +502,13 @@ income_var <- choose_var(income_var, auto_income)
 weight_var <- choose_var(weight_var, auto_weight)
 origin_var <- choose_var(origin_var, auto_origin)
 household_size_var <- choose_var(household_size_var, auto_household_size)
+age_var <- choose_var(NA_character_, auto_age)
 month_var <- choose_var(month_var, auto_month)
 panel_var <- choose_var(panel_var, auto_panel)
 wave_var <- choose_var(wave_var, auto_wave)
 household_status_var <- choose_var(household_status_var, auto_household_status)
+net_worth_var <- choose_var(net_worth_var, auto_net_worth)
+mortgage_debt_var <- choose_var(mortgage_debt_var, auto_mortgage_debt)
 
 if (is.na(student_debt_var)) missing_override_error("student_debt_var")
 if (is.na(race_var)) missing_override_error("race_var")
@@ -556,7 +585,10 @@ identified_vars <- tibble(
     "weight variable",
     "origin variable",
     "household size variable",
-    "month variable"
+    "month variable",
+    "age variable",
+    "net worth variable",
+    "mortgage debt variable"
   ),
   value = c(
     student_debt_var,
@@ -569,7 +601,10 @@ identified_vars <- tibble(
     weight_var,
     origin_var,
     household_size_var,
-    month_var
+    month_var,
+    age_var,
+    net_worth_var,
+    mortgage_debt_var
   )
 )
 print(identified_vars, n = nrow(identified_vars))
@@ -595,6 +630,9 @@ main_required_cols <- unique(na.omit(c(
   weight_var,
   origin_var,
   household_size_var,
+  age_var,
+  net_worth_var,
+  mortgage_debt_var,
   month_var,
   panel_var,
   wave_var,
@@ -679,7 +717,10 @@ anchored_dt[, .marital_code := safe_num(get(marital_status_var))]
 anchored_dt[, .filing_status_code := safe_num(get(filing_status_var))]
 anchored_dt[, .origin_code := safe_num(get(origin_var))]
 anchored_dt[, .hh_size := if (!is.na(household_size_var) && household_size_var %in% names(anchored_dt)) safe_num(get(household_size_var)) else NA_real_]
+anchored_dt[, .age := if (!is.na(age_var) && age_var %in% names(anchored_dt)) safe_num(get(age_var)) else NA_real_]
 anchored_dt[, .hh_status := if (!is.na(household_status_var) && household_status_var %in% names(anchored_dt)) safe_num(get(household_status_var)) else NA_real_]
+anchored_dt[, .net_worth := if (!is.na(net_worth_var) && net_worth_var %in% names(anchored_dt)) safe_num(get(net_worth_var)) else NA_real_]
+anchored_dt[, .mortgage_debt := if (!is.na(mortgage_debt_var) && mortgage_debt_var %in% names(anchored_dt)) safe_num(get(mortgage_debt_var)) else NA_real_]
 anchored_dt[, .is_reference_person := !is.na(.person_id) & safe_num(.person_id) == reference_person_code_default]
 
 data.table::setorderv(anchored_dt, cols = c(".household_id", ".is_reference_person", ".month_order"), order = c(1, -1, -1), na.last = TRUE)
@@ -703,6 +744,9 @@ analysis_df <- as_tibble(household_dt) %>%
     marital_code = .marital_code,
     filing_status_observed = filing_status_label(.filing_status_code),
     household_size = .hh_size,
+    age = .age,
+    total_net_worth = .net_worth,
+    mortgage_debt = .mortgage_debt,
     household_status = .hh_status,
     weight = .weight,
     household_group = case_when(
@@ -711,7 +755,11 @@ analysis_df <- as_tibble(household_dt) %>%
       TRUE ~ NA_character_
     ),
     filing_status = filing_status_proxy_from_household_group(household_group),
-    zero_payment_cutoff = zero_payment_income_cutoff(household_size)
+    zero_payment_cutoff = zero_payment_income_cutoff(household_size),
+    ibr_payment_rate = ibr_payment_rate_from_age(age),
+    ibr_repayment_years = ibr_repayment_years_from_age(age),
+    annual_ibr_payment = annual_ibr_payment_from_income(income, household_size, age),
+    monthly_ibr_payment = annual_ibr_payment / 12
   )
 
 if (use_replicate_weights) {
@@ -747,6 +795,7 @@ eligible_base <- analysis_df %>%
   filter(
     !is.na(household_group),
     !is.na(income),
+    !is.na(age),
     !is.na(household_size),
     !is.na(race),
     !is.na(ethnicity),
@@ -762,6 +811,10 @@ eligible_base <- analysis_df %>%
 
 cat("Eligible rows before interest-rate scenarios:", format(nrow(eligible_base), big.mark = ","), "\n")
 
+prefilter_harmonized_output_file <- file.path(paths$sipp_harmonized_dir, paste0("sipp_household_year_", analysis_year, "_prefilter.rds"))
+saveRDS(analysis_df, prefilter_harmonized_output_file)
+cat("Wrote pre-filter SIPP household-year file:", prefilter_harmonized_output_file, "\n")
+
 harmonized_output_file <- file.path(paths$sipp_harmonized_dir, paste0("sipp_household_year_", analysis_year, ".rds"))
 saveRDS(eligible_base, harmonized_output_file)
 cat("Wrote harmonized SIPP household-year file:", harmonized_output_file, "\n")
@@ -773,7 +826,8 @@ summarise_rate_scenario <- function(df, rate_scenario_id, rate_scenario_name, an
       rate_scenario = rate_scenario_name,
       annual_interest_rate = annual_interest_rate,
       positive_student_debt = student_debt > 0,
-      interest_paid = if_else(positive_student_debt, student_debt * annual_interest_rate, 0),
+      accrued_interest = if_else(positive_student_debt, student_debt * annual_interest_rate, 0),
+      interest_paid = if_else(positive_student_debt, pmin(accrued_interest, annual_ibr_payment), 0),
       max_potential_deduction = pmin(interest_paid, student_loan_interest_deduction_max),
       allowable_deduction = allowable_deduction_from_magi(max_potential_deduction, income, filing_status),
       marginal_tax_rate = marginal_tax_rate_from_income(income, filing_status),
@@ -871,7 +925,8 @@ build_married_cap_comparison <- function(df, group_var, rep_cols, variance_scale
         annual_interest_rate = interest_rate_scenarios$annual_interest_rate[[i]],
         comparison_group = .data[[group_var]],
         positive_student_debt = student_debt > 0,
-        interest_paid = if_else(positive_student_debt, student_debt * annual_interest_rate, 0),
+        accrued_interest = if_else(positive_student_debt, student_debt * annual_interest_rate, 0),
+        interest_paid = if_else(positive_student_debt, pmin(accrued_interest, annual_ibr_payment), 0),
         baseline_cap = deduction_cap_from_household_group(household_group, married_cap = student_loan_interest_deduction_max),
         proposed_cap = deduction_cap_from_household_group(household_group, married_cap = student_loan_interest_deduction_max_married_proposed),
         allowable_deduction_baseline = allowable_deduction_from_magi(pmin(interest_paid, baseline_cap), income, filing_status),
