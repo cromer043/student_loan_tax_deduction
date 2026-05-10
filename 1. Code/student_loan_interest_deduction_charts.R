@@ -205,7 +205,7 @@ make_main_grouped_rate_plot <- function(df, estimate_col, se_col, title_text, su
     filter(!is.na(group_value), !is.na(estimate)) %>%
     add_plot_ci(estimate_col = "estimate", se_col = "se", floor_zero = TRUE) %>%
     mutate(
-      group_value = factor(group_value, levels = c("Black", "Non-Black")),
+      group_value = factor(group_value, levels = c("Non-Black", "Black")),
       rate_scenario = factor(rate_scenario, levels = rate_levels)
     )
 
@@ -221,7 +221,7 @@ make_main_grouped_rate_plot <- function(df, estimate_col, se_col, title_text, su
       alpha = 0.75
     ) +
     facet_wrap(~ household_group, ncol = 1, scales = "free_y") +
-    scale_fill_manual(values = main_group_fill_values, name = NULL) +
+    scale_fill_manual(values = main_group_fill_values, breaks = c("Black", "Non-Black"), name = NULL) +
     scale_x_discrete(labels = c("Estimated interest at 2.75% annual rate" = "2.75%", "Estimated interest at 6.8% annual rate" = "6.8%")) +
     labs(
       title = wrap_plot_title(title_text),
@@ -366,7 +366,7 @@ make_gain_two_panel_grouped_rate_plot <- function(df, output_file, source_id) {
     filter(!is.na(group_value), !is.na(estimate)) %>%
     add_plot_ci(estimate_col = "estimate", se_col = "se", floor_zero = TRUE) %>%
     mutate(
-      group_value = factor(group_value, levels = c("Black", "Non-Black")),
+      group_value = factor(group_value, levels = c("Non-Black", "Black")),
       rate_scenario = factor(rate_scenario, levels = rate_levels),
       measure = factor(measure, levels = c("Allowable deduction gain", "Estimated tax savings gain"))
     )
@@ -383,7 +383,7 @@ make_gain_two_panel_grouped_rate_plot <- function(df, output_file, source_id) {
       alpha = 0.75
     ) +
     facet_wrap(~ measure, ncol = 1, scales = "free_y") +
-    scale_fill_manual(values = main_group_fill_values, name = NULL) +
+    scale_fill_manual(values = main_group_fill_values, breaks = c("Black", "Non-Black"), name = NULL) +
     scale_x_discrete(labels = c("Estimated interest at 2.75% annual rate" = "2.75%", "Estimated interest at 6.8% annual rate" = "6.8%")) +
     scale_y_continuous(
       trans = "sqrt",
