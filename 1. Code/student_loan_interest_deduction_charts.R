@@ -83,7 +83,15 @@ add_within_household_order <- function(df, group_col, ranking_col) {
 
 comparison_caption_body <- paste(
   "Population: subgroup means among eligible households with positive student debt;",
-  "unmarried households have zero modeled gain by design because their cap is unchanged.",
+  "Tax savings equal allowable deduction times an estimated 2025 federal marginal tax rate.",
+  "The 2.75% and 6.8% rates are the minimum and maximum undergraduate federal loan rates",
+  "from 2000 through 2025; because borrower-specific loan terms are not observed,",
+  "they show a plausible range of impacts. Error bars show 95% confidence intervals."
+)
+
+married_cap_gain_caption_body <- paste(
+  "Population: subgroup means among eligible households with positive student debt.",
+  "We display only married households by design because only the married cap is changed.",
   "Tax savings equal allowable deduction times an estimated 2025 federal marginal tax rate.",
   "The 2.75% and 6.8% rates are the minimum and maximum undergraduate federal loan rates",
   "from 2000 through 2025; because borrower-specific loan terms are not observed,",
@@ -244,7 +252,7 @@ make_gain_two_panel_plot <- function(df, output_file, source_id) {
       subtitle = wrap_plot_subtitle("Estimated allowable-deduction gains and estimated tax-savings gains from raising the married-household deduction cap to $5,000 for Black and Non-Black households."),
       x = "Dollars",
       y = NULL,
-      caption = build_caption_text(source_id, comparison_caption_body)
+      caption = build_caption_text(source_id, married_cap_gain_caption_body)
     ) +
     theme_minimal(base_size = 12) +
     theme(
