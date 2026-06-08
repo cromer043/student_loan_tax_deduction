@@ -34,6 +34,12 @@ outmoded_run <- identical(tolower(arg_value("outmoded", "true")), "true")
 
 irs_csv_dir <- if (outmoded_run) paths$outmoded_irs_csv_dir else paths$irs_csv_dir
 irs_graph_dir <- if (outmoded_run) paths$outmoded_irs_graph_dir else paths$irs_graph_dir
+irs_state_csv_file <- file.path(paths$outmoded_irs_csv_dir, paste0("irs_student_loan_interest_deduction_state_overall_", tax_year_label, ".csv"))
+irs_income_groups_csv_file <- if (outmoded_run) {
+  file.path(paths$outmoded_irs_csv_dir, paste0("irs_student_loan_interest_deduction_us_income_groups_", tax_year_label, ".csv"))
+} else {
+  file.path(paths$irs_csv_dir, "irs_student_loan_interest_deduction_us_income_groups.csv")
+}
 
 if (!file.exists(irs_xlsx)) {
   stop("Missing IRS workbook at ", irs_xlsx, ". Download it first.")
@@ -120,7 +126,7 @@ write_csv(
       student_loan_deduction_amount_thousands,
       student_loan_deduction_amount_share_of_agi
     ),
-  file.path(irs_csv_dir, "irs_student_loan_interest_deduction_state_overall.csv")
+  irs_state_csv_file
 )
 
 income_group_labels <- c(
@@ -151,7 +157,7 @@ us_income_group_data <- tibble(
 
 write_csv(
   us_income_group_data,
-  file.path(irs_csv_dir, "irs_student_loan_interest_deduction_us_income_groups.csv")
+  irs_income_groups_csv_file
 )
 
 state_shapes <- read_sf(sprintf("/vsizip/%s", normalizePath(census_zip, winslash = "/", mustWork = TRUE))) %>%
