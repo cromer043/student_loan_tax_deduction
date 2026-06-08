@@ -30,7 +30,7 @@ ensure_dir(census_dir)
 irs_xlsx <- arg_value("irs-file", file.path(irs_dir, "19in55cm.xlsx"))
 census_zip <- file.path(census_dir, "cb_2024_us_state_20m.zip")
 tax_year_label <- arg_value("tax-year", "2019")
-outmoded_run <- identical(tolower(arg_value("outmoded", "false")), "true")
+outmoded_run <- identical(tolower(arg_value("outmoded", "true")), "true")
 
 irs_csv_dir <- if (outmoded_run) paths$outmoded_irs_csv_dir else paths$irs_csv_dir
 irs_graph_dir <- if (outmoded_run) paths$outmoded_irs_graph_dir else paths$irs_graph_dir
