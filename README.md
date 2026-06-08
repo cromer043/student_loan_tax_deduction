@@ -6,9 +6,9 @@ This project now uses a source-data-to-output workflow with:
 - `SCF` target years `2016`, `2019`, and `2022`
 - year-by-year harmonized household files
 - current married-cap comparison figures in the main graph folders
-- all older or appendix-style outputs routed to [`4. outmoded`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded)
+- all older outputs routed to [`4. outmoded`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded)
 
-The current tax logic was preserved:
+The current tax logic:
 
 - current IRS student loan interest deduction rules
 - IDR-style `$0 payment` income exclusion
