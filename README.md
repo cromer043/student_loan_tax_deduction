@@ -1,16 +1,16 @@
 # Student Loans and Taxes
 
-This project now uses a source-data-to-output workflow with:
+This project uses a source-data-to-output workflow with:
 
 - `SIPP` target years `2018` through `2024`
 - `SCF` target years `2016`, `2019`, and `2022`
 - year-by-year harmonized household files
-- current married-cap comparison figures in the main graph folders
-- all older outputs routed to [`4. outmoded`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded)
+- married-cap comparison figures in the main graph folders
+- outmoded outputs routed to [`4. outmoded`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded)
 
-The current tax logic:
+The tax logic:
 
-- current IRS student loan interest deduction rules
+- IRS student loan interest deduction rules
 - IDR-style `$0 payment` income exclusion
 - MAGI phaseout rules
 - married `$5,000` cap comparison
@@ -28,7 +28,7 @@ The current tax logic:
 - [`3. Output Graphs`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/3.%20Output%20Graphs)
   Current graph outputs only.
 - [`4. outmoded`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded)
-  Outmoded CSV and graph outputs, including the older deduction-component figures and full-race time-series figures.
+  Outmoded CSV and graph outputs, including deduction-component figures and full-race time-series figures.
 
 Source-specific folders:
 
@@ -60,13 +60,13 @@ Outmoded mirrors:
   Uses the `scf` R package to download SCF data into year-specific cache folders.
 
 - [`sipp_student_debt_by_race_marital_status.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/sipp_student_debt_by_race_marital_status.R)
-  Runs the SIPP analysis for a single year. It now accepts `--year=YYYY`, writes year-specific CSVs under `by-year`, saves a harmonized household-year file, and writes the current comparison CSVs used by the main graph workflow.
+  Runs the SIPP analysis for a single year. It accepts `--year=YYYY`, writes year-specific CSVs under `by-year`, saves a harmonized household-year file, and writes the comparison CSVs used by the main graph workflow.
 
 - [`scf_student_loan_interest_deduction_analysis.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/scf_student_loan_interest_deduction_analysis.R)
-  Runs the SCF analysis for a single year. It now accepts `--year=YYYY`, writes year-specific CSVs under `by-year`, saves a harmonized household-year file, and writes the current comparison CSVs used by the main graph workflow.
+  Runs the SCF analysis for a single year. It accepts `--year=YYYY`, writes year-specific CSVs under `by-year`, saves a harmonized household-year file, and writes the comparison CSVs used by the main graph workflow.
 
 - [`build_student_debt_time_series_summaries.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/build_student_debt_time_series_summaries.R)
-  Builds the new yearly summary-statistic CSVs from harmonized household-year files.
+  Builds yearly summary-statistic CSVs from harmonized household-year files.
 
 - [`build_binding_constraint_married_cap_outputs.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/build_binding_constraint_married_cap_outputs.R)
   Builds binding-constraint married-household outputs for the `$5,000` married-cap comparison, including Black / Non-Black subgroup gains, total modeled tax-relief tables, and the Census-population-share ratio inputs.
@@ -80,14 +80,17 @@ Outmoded mirrors:
   - the weighted percent of households with mortgage debt greater than or equal to `$750,000` for all households and for the filtered positive-debt household subsets
 
 - [`student_loan_interest_deduction_charts.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/student_loan_interest_deduction_charts.R)
-  Builds the current and outmoded graph outputs. All graph intervals are now `95% confidence intervals`, not `±1 SE`.
+  Builds the main and outmoded graph outputs. All graph intervals use `95% confidence intervals`.
 
 - [`irs_student_loan_deduction_state_maps.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/irs_student_loan_deduction_state_maps.R)
-  Downloads-ready IRS mapping workflow for the SOI state table workbook. The current main pass reads the overall state columns from [`19in55cm.xlsx`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/0.%20Data/IRS/19in55cm.xlsx) for tax year `2019`, extracts:
+  Downloads-ready IRS mapping workflow for the SOI state table workbook. The script reads the overall state columns from [`19in55cm.xlsx`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/0.%20Data/IRS/19in55cm.xlsx) for tax year `2019`, extracts:
   - `Number of returns [1]`
   - `Student loan interest deduction: Number`
   - `Student loan interest deduction: Amount`
   and writes one state-level CSV plus two state maps to the IRS output folders. The script also accepts optional arguments so alternative IRS workbook vintages can be rendered to the outmoded IRS folders, for example the tax year `2022` workbook [`22in55cm.xlsx`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/0.%20Data/IRS/22in55cm.xlsx).
+
+- [`2. Output CSV/figure_csv_crosswalk.csv`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/figure_csv_crosswalk.csv)
+  Crosswalk from figure files to the CSV inputs that supply the plotted values.
 
 - [`run_full_workflow.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/run_full_workflow.R)
   Convenience wrapper that downloads data, runs all source-year analyses, builds time-series CSVs, and regenerates graphs.
@@ -172,12 +175,12 @@ At minimum, the harmonized files carry the variables needed for:
 - household size
 - tax deduction analysis fields
 
-## Current Rule Details
+## Rule Details
 
 Student loan interest deduction logic:
 
 - `interest_paid`
-  Estimated annual interest actually paid under the assumed rate scenario and the current project repayment assumption.
+  Estimated annual interest actually paid under the assumed rate scenario and the project repayment assumption.
 - repayment assumption
   All households are modeled as enrolled in `IBR`.
   - households younger than `34` are treated as post-`July 1, 2014` borrowers and pay `10%` of discretionary income over `20` years
@@ -189,10 +192,10 @@ Student loan interest deduction logic:
 - `interest_paid = min(accrued_interest, annual_ibr_payment)`
 - `max_potential_deduction = min(interest_paid, cap)`
 - `allowable_deduction`
-  Applies current MAGI phaseout rules.
+  Applies the MAGI phaseout rules.
 - `estimated_tax_savings = allowable_deduction × marginal_tax_rate`
 
-Current-style baseline cap:
+Baseline cap:
 
 - nonmarried households: `$2,500`
 - married households: `$2,500`
@@ -220,7 +223,7 @@ IDR-style exclusion:
   - size `1`: `$23,500`
   - each additional household member: `+$8,200`
 
-Family size now matters in two places:
+Family size matters in two places:
 
 - for the `$0 payment` exclusion
 - for the modeled `IBR` discretionary-income payment cap that limits `interest_paid`
@@ -245,7 +248,7 @@ Black / Non-Black analysis:
 
 ## Time-Series Summary Definitions
 
-These definitions are used exactly in the new yearly summary CSVs and line graphs:
+These definitions are used in the yearly summary CSVs and line graphs:
 
 1. `Percent with student debt`
    Denominator: all eligible households.
@@ -259,7 +262,7 @@ These definitions are used exactly in the new yearly summary CSVs and line graph
 
 ## Uncertainty
 
-All graphs now use approximate `95% confidence intervals`:
+All graphs use approximate `95% confidence intervals`:
 
 - `lower_95 = estimate - 1.96 × SE`
 - `upper_95 = estimate + 1.96 × SE`
@@ -275,18 +278,18 @@ SCF:
 
 ## Output Rules
 
-Main graph folders now keep only the current memo-order figures:
+Main graph folders keep the memo-order figures:
 
 1. `Percent of Households with Student Debt by Black and Non-Black Group`
 2. `Mean Student Debt Among Debt Holders by Black and Non-Black Group`
 3. `$2,500 Cap Binds Differently for Black and Non-Black Borrowers`
 4. `A Higher Married Cap Raises Deductions and Tax Savings for Married Black Households`
 
-Older graphs still generate, but they now write to `4. outmoded` instead of the main graph folders.
+Outmoded graphs still generate and write to `4. outmoded`.
 
-## New Binding-Constraint Outputs
+## Binding-Constraint Outputs
 
-These files are now written from the harmonized latest-year source files:
+These files are written from the harmonized latest-year source files:
 
 - [`2. Output CSV/2. A. SIPP/sipp_binding_constraint_married_cap_black_nonblack.csv`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/2.%20A.%20SIPP/sipp_binding_constraint_married_cap_black_nonblack.csv)
 - [`2. Output CSV/2. B. SCF/scf_binding_constraint_married_cap_black_nonblack.csv`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/2.%20B.%20SCF/scf_binding_constraint_married_cap_black_nonblack.csv)
@@ -299,11 +302,11 @@ The Census population share file uses:
 - `B02009_001E`: Black alone or in combination with one or more other races
 - `B01003_001E`: total population
 
-## Current Local State
+## Local Data Coverage
 
-The local caches now include the full targeted source years:
+The local caches include the targeted source years:
 
 - SIPP `2018` through `2024`
 - SCF `2016`, `2019`, and `2022`
 
-So the harmonized files, yearly summary CSVs, and time-series graph workflow can now produce actual multi-year outputs rather than single-year point estimates.
+The harmonized files, yearly summary CSVs, and time-series graph workflow produce multi-year outputs rather than single-year point estimates.
