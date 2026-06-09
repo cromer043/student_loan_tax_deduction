@@ -2,11 +2,10 @@
 
 This project uses a source-data-to-output workflow with:
 
-- `SIPP` target years `2018` through `2024`
 - `SCF` target years `2016`, `2019`, and `2022`
 - year-by-year harmonized household files
 - married-cap comparison figures in the main graph folders
-- outmoded outputs routed to [`4. outmoded`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded)
+- archived and outmoded outputs routed to [`4. outmoded`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded)
 
 The tax logic:
 
@@ -28,18 +27,16 @@ The tax logic:
 - [`3. Output Graphs`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/3.%20Output%20Graphs)
   Current graph outputs only.
 - [`4. outmoded`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded)
-  Outmoded CSV and graph outputs, including deduction-component figures and full-race time-series figures.
+  Outmoded CSV and graph outputs, including all SIPP outputs, deduction-component figures, and full-race time-series figures.
 
-Source-specific folders:
+Current source-specific folders:
 
-- SIPP CSVs: [`2. Output CSV/2. A. SIPP`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/2.%20A.%20SIPP)
 - SCF CSVs: [`2. Output CSV/2. B. SCF`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/2.%20B.%20SCF)
 - IRS CSVs: [`2. Output CSV/2. C. IRS`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/2.%20C.%20IRS)
-- SIPP graphs: [`3. Output Graphs/3. A. Sipp`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/3.%20Output%20Graphs/3.%20A.%20Sipp)
 - SCF graphs: [`3. Output Graphs/3. B. SCF`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/3.%20Output%20Graphs/3.%20B.%20SCF)
 - IRS graphs: [`3. Output Graphs/3. C. IRS`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/3.%20Output%20Graphs/3.%20C.%20IRS)
 
-Outmoded mirrors:
+Archived and outmoded mirrors:
 
 - [`4. outmoded/2. Output CSV/2. A. SIPP`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded/2.%20Output%20CSV/2.%20A.%20SIPP)
 - [`4. outmoded/2. Output CSV/2. B. SCF`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded/2.%20Output%20CSV/2.%20B.%20SCF)
@@ -54,22 +51,22 @@ Outmoded mirrors:
   Shared helpers for paths, year parsing, and `95%` confidence interval calculation.
 
 - [`download_sipp_years.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/download_sipp_years.R)
-  Downloads and caches official yearly SIPP files. Best-judgment choice: this workflow uses official downloadable files rather than the SIPP API for the core microdata analysis, because the public downloadable files are more practical for full microdata plus replicate-weight work.
+  Downloads and caches official yearly SIPP files used for the archived SIPP analysis outputs.
 
 - [`download_scf_years.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/download_scf_years.R)
   Uses the `scf` R package to download SCF data into year-specific cache folders.
 
 - [`sipp_student_debt_by_race_marital_status.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/sipp_student_debt_by_race_marital_status.R)
-  Runs the SIPP analysis for a single year. It accepts `--year=YYYY`, writes year-specific CSVs under `by-year`, saves a harmonized household-year file, and writes the comparison CSVs used by the main graph workflow.
+  Runs the SIPP analysis for a single year. It accepts `--year=YYYY`, writes year-specific CSVs under `4. outmoded/2. Output CSV/2. A. SIPP/by-year`, saves a harmonized household-year file, and writes archived comparison CSVs.
 
 - [`scf_student_loan_interest_deduction_analysis.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/scf_student_loan_interest_deduction_analysis.R)
   Runs the SCF analysis for a single year. It accepts `--year=YYYY`, writes year-specific CSVs under `by-year`, saves a harmonized household-year file, and writes the comparison CSVs used by the main graph workflow.
 
 - [`build_student_debt_time_series_summaries.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/build_student_debt_time_series_summaries.R)
-  Builds yearly summary-statistic CSVs from harmonized household-year files.
+  Builds yearly summary-statistic CSVs from harmonized household-year files. SIPP outputs are written to the archived SIPP output folder.
 
 - [`build_binding_constraint_married_cap_outputs.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/build_binding_constraint_married_cap_outputs.R)
-  Builds binding-constraint married-household outputs for the `$5,000` married-cap comparison, including Black / Non-Black subgroup gains, total modeled tax-relief tables, and the Census-population-share ratio inputs.
+  Builds binding-constraint married-household outputs for the `$5,000` married-cap comparison, including Black / Non-Black subgroup gains, total modeled tax-relief tables, and the Census-population-share ratio inputs. SIPP outputs are written to the archived SIPP output folder.
 
 - [`build_filtered_interest_payment_summary_tables.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/build_filtered_interest_payment_summary_tables.R)
   Builds source-specific CSVs and summary tables for annual interest actually paid among filtered households with positive student debt, where `interest_paid = min(accrued interest, annual_ibr_payment)`.
@@ -78,9 +75,10 @@ Outmoded mirrors:
   Builds source-specific CSVs for:
   - weighted mean and weighted median total net worth among filtered households with positive student debt, plus the percent at the current `$2,500` binding deduction constraint under the `2.75%` and `6.8%` interest assumptions
   - the weighted percent of households with mortgage debt greater than or equal to `$750,000` for all households and for the filtered positive-debt household subsets
+  SIPP outputs are written to the archived SIPP output folder.
 
 - [`student_loan_interest_deduction_charts.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/student_loan_interest_deduction_charts.R)
-  Builds the main and outmoded graph outputs. All graph intervals use `95% confidence intervals`.
+  Builds the main and outmoded graph outputs. SCF and IRS figures write to the main graph folders. SIPP figures write to the archived graph folder. All graph intervals use `95% confidence intervals`.
 
 - [`irs_student_loan_deduction_state_maps.R`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/1.%20Code/irs_student_loan_deduction_state_maps.R)
   Downloads-ready IRS mapping workflow for the SOI state table workbook. The script reads the overall state columns from [`19in55cm.xlsx`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/0.%20Data/IRS/19in55cm.xlsx) for tax year `2019`, extracts:
@@ -100,8 +98,8 @@ Outmoded mirrors:
 Single-year runs:
 
 ```bash
-Rscript "1. Code/sipp_student_debt_by_race_marital_status.R" --year=2024
 Rscript "1. Code/scf_student_loan_interest_deduction_analysis.R" --year=2022
+Rscript "1. Code/sipp_student_debt_by_race_marital_status.R" --year=2024
 ```
 
 Refresh cached raw data:
@@ -153,8 +151,8 @@ Rscript "1. Code/run_full_workflow.R"
 
 These are written to:
 
-- [`0. Data/SIPP/harmonized`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/0.%20Data/SIPP/harmonized)
 - [`0. Data/SCF/harmonized`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/0.%20Data/SCF/harmonized)
+- [`0. Data/SIPP/harmonized`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/0.%20Data/SIPP/harmonized)
 
 At minimum, the harmonized files carry the variables needed for:
 
@@ -278,7 +276,7 @@ SCF:
 
 ## Output Rules
 
-Main graph folders keep the memo-order figures:
+Main graph folders keep the memo-order figures for the active SCF and IRS outputs:
 
 1. `Percent of Households with Student Debt by Black and Non-Black Group`
 2. `Mean Student Debt Among Debt Holders by Black and Non-Black Group`
@@ -291,10 +289,10 @@ Outmoded graphs still generate and write to `4. outmoded`.
 
 These files are written from the harmonized latest-year source files:
 
-- [`2. Output CSV/2. A. SIPP/sipp_binding_constraint_married_cap_black_nonblack.csv`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/2.%20A.%20SIPP/sipp_binding_constraint_married_cap_black_nonblack.csv)
 - [`2. Output CSV/2. B. SCF/scf_binding_constraint_married_cap_black_nonblack.csv`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/2.%20B.%20SCF/scf_binding_constraint_married_cap_black_nonblack.csv)
 - [`2. Output CSV/binding_constraint_tax_relief_summary.csv`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/binding_constraint_tax_relief_summary.csv)
 - [`2. Output CSV/black_population_share_census_b02009.csv`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/2.%20Output%20CSV/black_population_share_census_b02009.csv)
+- [`4. outmoded/2. Output CSV/2. A. SIPP/sipp_binding_constraint_married_cap_black_nonblack.csv`](/Users/carlromer/Documents/Brookings/Student%20loans%20and%20taxes/4.%20outmoded/2.%20Output%20CSV/2.%20A.%20SIPP/sipp_binding_constraint_married_cap_black_nonblack.csv)
 
 The Census population share file uses:
 
@@ -306,7 +304,7 @@ The Census population share file uses:
 
 The local caches include the targeted source years:
 
-- SIPP `2018` through `2024`
 - SCF `2016`, `2019`, and `2022`
+- SIPP `2018` through `2024`
 
 The harmonized files, yearly summary CSVs, and time-series graph workflow produce multi-year outputs rather than single-year point estimates.

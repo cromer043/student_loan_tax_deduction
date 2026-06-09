@@ -317,11 +317,11 @@ scf_mortgage <- make_mortgage_summary(scf_all, scf_filtered, "SCF", 2022, use_im
 sipp_median_net_worth_thresholds <- make_median_net_worth_threshold_summary(sipp_all, sipp_filtered, "SIPP", 2024, use_implicates = FALSE)
 scf_median_net_worth_thresholds <- make_median_net_worth_threshold_summary(scf_all, scf_filtered, "SCF", 2022, use_implicates = TRUE)
 
-sipp_networth_binding_out <- file.path(paths$sipp_csv_dir, "sipp_filtered_net_worth_binding_constraint_summary.csv")
+sipp_networth_binding_out <- file.path(paths$outmoded_sipp_csv_dir, "sipp_filtered_net_worth_binding_constraint_summary.csv")
 scf_networth_binding_out <- file.path(paths$scf_csv_dir, "scf_filtered_net_worth_binding_constraint_summary.csv")
-sipp_mortgage_out <- file.path(paths$sipp_csv_dir, "sipp_mortgage_750k_summary.csv")
+sipp_mortgage_out <- file.path(paths$outmoded_sipp_csv_dir, "sipp_mortgage_750k_summary.csv")
 scf_mortgage_out <- file.path(paths$scf_csv_dir, "scf_mortgage_750k_summary.csv")
-sipp_median_net_worth_thresholds_out <- file.path(paths$sipp_csv_dir, "sipp_median_net_worth_threshold_groups.csv")
+sipp_median_net_worth_thresholds_out <- file.path(paths$outmoded_sipp_csv_dir, "sipp_median_net_worth_threshold_groups.csv")
 scf_median_net_worth_thresholds_out <- file.path(paths$scf_csv_dir, "scf_median_net_worth_threshold_groups.csv")
 
 write_csv(sipp_networth_binding, sipp_networth_binding_out, na = "")

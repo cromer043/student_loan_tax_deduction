@@ -647,12 +647,15 @@ main_graph_specs <- tribble(
   file.path(paths$scf_csv_dir, "scf_student_loan_interest_deduction_married_cap_comparison_by_race.csv"),
   file.path(paths$scf_csv_dir, "scf_binding_constraint_married_cap_black_nonblack.csv"),
   paths$scf_graph_dir,
-  paths$outmoded_scf_graph_dir,
+  paths$outmoded_scf_graph_dir
+)
+
+sipp_outmoded_graph_specs <- tribble(
+  ~source_id, ~comparison_file, ~comparison_by_race_file, ~binding_file, ~outmoded_dir,
   "SIPP",
-  file.path(paths$sipp_csv_dir, "sipp_student_loan_interest_deduction_married_cap_comparison_black_nonblack.csv"),
-  file.path(paths$sipp_csv_dir, "sipp_student_loan_interest_deduction_married_cap_comparison_by_race.csv"),
-  file.path(paths$sipp_csv_dir, "sipp_binding_constraint_married_cap_black_nonblack.csv"),
-  paths$sipp_graph_dir,
+  file.path(paths$outmoded_sipp_csv_dir, "sipp_student_loan_interest_deduction_married_cap_comparison_black_nonblack.csv"),
+  file.path(paths$outmoded_sipp_csv_dir, "sipp_student_loan_interest_deduction_married_cap_comparison_by_race.csv"),
+  file.path(paths$outmoded_sipp_csv_dir, "sipp_binding_constraint_married_cap_black_nonblack.csv"),
   paths$outmoded_sipp_graph_dir
 )
 
@@ -850,11 +853,148 @@ for (i in seq_len(nrow(main_graph_specs))) {
   )
 }
 
+for (i in seq_len(nrow(sipp_outmoded_graph_specs))) {
+  spec <- sipp_outmoded_graph_specs[i, ]
+  if (!file.exists(spec$comparison_file[[1]]) || !file.exists(spec$comparison_by_race_file[[1]]) || !file.exists(spec$binding_file[[1]])) next
+
+  comparison_df <- read_csv(spec$comparison_file[[1]], show_col_types = FALSE) %>%
+    mutate(
+      rate_scenario = factor(rate_scenario, levels = rate_levels),
+      household_group = factor(household_group, levels = household_levels),
+      black_nonblack = factor(black_nonblack, levels = c("Black", "Non-Black"))
+    )
+
+  comparison_race_df <- read_csv(spec$comparison_by_race_file[[1]], show_col_types = FALSE) %>%
+    mutate(
+      rate_scenario = factor(rate_scenario, levels = rate_levels),
+      household_group = factor(household_group, levels = household_levels)
+    )
+
+  binding_df <- read_csv(spec$binding_file[[1]], show_col_types = FALSE) %>%
+    mutate(
+      rate_scenario = factor(rate_scenario, levels = rate_levels),
+      household_group = factor(household_group, levels = household_levels),
+      black_nonblack = factor(black_nonblack, levels = c("Black", "Non-Black"))
+    )
+
+  ensure_dir(spec$outmoded_dir[[1]])
+
+  make_gain_two_panel_grouped_rate_plot(
+    comparison_df,
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 4 - A Higher Married Cap Raises Deductions and Tax Savings for Married Black Households.pdf"),
+    source_id = spec$source_id[[1]]
+  )
+
+  make_horizontal_bar_plot(
+    comparison_df,
+    group_col = "black_nonblack",
+    estimate_col = "mean_deduction_gain",
+    se_col = "SE: mean deduction gain",
+    title_text = "Outmoded Figure: A Higher Married Cap Expands Deductions Most for Black Households",
+    subtitle_text = "Estimated allowable-deduction gain from raising the married-household deduction cap to $5,000 for Black and Non-Black households.",
+    x_label = "Dollars",
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 4 - A Higher Married Cap Expands Deductions Most for Some Groups.pdf"),
+    source_id = spec$source_id[[1]],
+    household_filter = "Married household"
+  )
+
+  make_horizontal_bar_plot(
+    comparison_df,
+    group_col = "black_nonblack",
+    estimate_col = "mean_tax_savings_gain",
+    se_col = "SE: mean tax savings gain",
+    title_text = "Outmoded Figure: A Higher Married Cap Disproportionately Raises Tax Savings for Married Black Households",
+    subtitle_text = "Estimated tax savings gain from raising the married-household deduction cap to $5,000 for Black and Non-Black households.",
+    x_label = "Dollars",
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 5 - A Higher Married Cap Disproportionately Raises Tax Savings for Married Black Households.pdf"),
+    source_id = spec$source_id[[1]],
+    household_filter = "Married household"
+  )
+
+  make_comparison_appendix_plot(
+    comparison_df,
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 6 - Appendix Married-Cap Comparison for Black and Non-Black Households.pdf"),
+    source_id = spec$source_id[[1]]
+  )
+
+  make_horizontal_bar_plot(
+    comparison_race_df,
+    group_col = "race",
+    estimate_col = "pct_borrowers_at_2500_limit_baseline",
+    se_col = "SE: % borrowers at $2500 limit baseline",
+    title_text = "Outmoded Figure: Many Married Borrowers Still Run Into the $2,500 Cap",
+    subtitle_text = "Percent of married borrowers at the current $2,500 allowable-deduction limit by modified race group.",
+    x_label = "Percent of married borrowers",
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 7 - Share of Married Borrowers at the $2500 Deduction Limit by Race.pdf"),
+    source_id = spec$source_id[[1]],
+    percent_axis = TRUE,
+    household_filter = "Married household"
+  )
+
+  make_main_grouped_rate_plot(
+    comparison_df,
+    estimate_col = "pct_borrowers_at_2500_limit_baseline",
+    se_col = "SE: % borrowers at $2500 limit baseline",
+    title_text = "Figure 3: $2,500 Cap Binds Differently for Black and Non-Black Borrowers",
+    subtitle_text = "Percent of married and unmarried borrowers at the current $2,500 allowable-deduction limit for Black and Non-Black households.",
+    y_label = "Percent of borrowers",
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 3 - $2500 Cap Binds Differently for Black and Non-Black Borrowers.pdf"),
+    source_id = spec$source_id[[1]],
+    percent_axis = TRUE
+  )
+
+  make_horizontal_bar_plot(
+    comparison_race_df,
+    group_col = "race",
+    estimate_col = "pct_borrowers_at_2500_limit_baseline",
+    se_col = "SE: % borrowers at $2500 limit baseline",
+    title_text = "Outmoded Figure: Many Unmarried Borrowers Also Hit the $2,500 Cap",
+    subtitle_text = "Percent of unmarried borrowers at the current $2,500 allowable-deduction limit by modified race group.",
+    x_label = "Percent of unmarried borrowers",
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 9 - Share of Unmarried Borrowers at the $2500 Deduction Limit by Race.pdf"),
+    source_id = spec$source_id[[1]],
+    percent_axis = TRUE,
+    household_filter = "Unmarried household"
+  )
+
+  make_horizontal_bar_plot(
+    binding_df,
+    group_col = "black_nonblack",
+    estimate_col = "mean_deduction_gain",
+    se_col = "SE: mean deduction gain",
+    title_text = "Figure 8: Married Borrowers Already at the Cap Would See the Largest Deduction Gains",
+    subtitle_text = "Estimated allowable-deduction gain from raising the married cap to $5,000 among married households already at the current $2,500 binding constraint.",
+    x_label = "Dollars",
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 8 - Binding Constraint Married Borrowers Gain More Deduction Dollars.pdf"),
+    source_id = spec$source_id[[1]],
+    caption_body = binding_caption_body
+  )
+
+  make_horizontal_bar_plot(
+    binding_df,
+    group_col = "black_nonblack",
+    estimate_col = "mean_tax_savings_gain",
+    se_col = "SE: mean tax savings gain",
+    title_text = "Figure 9: Married Borrowers Already at the Cap Would See the Largest Tax Savings",
+    subtitle_text = "Estimated tax-savings gain from raising the married cap to $5,000 among married households already at the current $2,500 binding constraint.",
+    x_label = "Dollars",
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 9 - Binding Constraint Married Borrowers Gain More Tax Savings.pdf"),
+    source_id = spec$source_id[[1]],
+    caption_body = binding_caption_body
+  )
+
+  make_ratio_plot(
+    binding_df,
+    output_file = file.path(spec$outmoded_dir[[1]], "Figure 10 - Black Share of Binding-Constraint Tax Relief Relative to Population Share.pdf"),
+    source_id = spec$source_id[[1]]
+  )
+}
+
 time_series_specs <- tribble(
   ~source_id, ~grouping, ~input_file, ~main_output_dir, ~outmoded_output_dir,
   "SCF", "black_nonblack", file.path(paths$scf_csv_dir, "scf_student_debt_time_series_black_nonblack.csv"), paths$scf_graph_dir, paths$outmoded_scf_graph_dir,
   "SCF", "race", file.path(paths$outmoded_scf_csv_dir, "scf_student_debt_time_series_by_race.csv"), paths$scf_graph_dir, paths$outmoded_scf_graph_dir,
-  "SIPP", "black_nonblack", file.path(paths$sipp_csv_dir, "sipp_student_debt_time_series_black_nonblack.csv"), paths$sipp_graph_dir, paths$outmoded_sipp_graph_dir,
+  "SIPP", "black_nonblack", file.path(paths$outmoded_sipp_csv_dir, "sipp_student_debt_time_series_black_nonblack.csv"), paths$outmoded_sipp_graph_dir, paths$outmoded_sipp_graph_dir,
   "SIPP", "race", file.path(paths$outmoded_sipp_csv_dir, "sipp_student_debt_time_series_by_race.csv"), paths$sipp_graph_dir, paths$outmoded_sipp_graph_dir
 )
 

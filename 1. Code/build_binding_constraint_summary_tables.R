@@ -169,5 +169,5 @@ build_source_table <- function(source_id, out_dir) {
   cat("Wrote:", png_file, "\n")
 }
 
-build_source_table("SIPP", paths$sipp_graph_dir)
+build_source_table("SIPP", paths$outmoded_sipp_graph_dir)
 build_source_table("SCF", paths$scf_graph_dir)

@@ -20,7 +20,7 @@ paths <- get_workflow_paths(project_dir)
 analysis_year <- parse_year_arg(2024)
 data_dir <- file.path(paths$sipp_raw_dir, analysis_year)
 legacy_data_dir <- file.path(project_dir, "0. Data", "SIPP")
-output_csv_dir_sipp <- paths$sipp_csv_dir
+output_csv_dir_sipp <- paths$outmoded_sipp_csv_dir
 output_csv_dir_sipp_year <- file.path(output_csv_dir_sipp, "by-year", analysis_year)
 output_csv_dir_sipp_outmoded <- paths$outmoded_sipp_csv_dir
 

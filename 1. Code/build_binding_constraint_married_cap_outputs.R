@@ -560,7 +560,7 @@ relief_summary <- bind_rows(sipp_outputs$relief_summary, scf_outputs$relief_summ
   ) %>%
   select(-total_impacted_households, -total_impacted_households_se)
 
-sipp_binding_out <- file.path(paths$sipp_csv_dir, "sipp_binding_constraint_married_cap_black_nonblack.csv")
+sipp_binding_out <- file.path(paths$outmoded_sipp_csv_dir, "sipp_binding_constraint_married_cap_black_nonblack.csv")
 scf_binding_out <- file.path(paths$scf_csv_dir, "scf_binding_constraint_married_cap_black_nonblack.csv")
 summary_out <- file.path(paths$output_csv_dir, "binding_constraint_tax_relief_summary.csv")
 census_out <- file.path(paths$output_csv_dir, "black_population_share_census_b02009.csv")
